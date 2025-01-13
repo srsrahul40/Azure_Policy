@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Deny-VNet-Peering",
+    "policyDisplayName": "Deny vNet peering",
+    "policyDescription": "This policy denies the creation of vNet Peerings under the assigned scope."
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('policyName')]",
+      "properties": {
+        "policyType": "Custom",
+        "mode": "All",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "1.0.1",
+          "category": "Network",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "alzCloudEnvironments": [
+            "AzureCloud",
+            "AzureChinaCloud",
+            "AzureUSGovernment"
+          ]
+        },
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "allowedValues": [
+              "Audit",
+              "Deny",
+              "Disabled"
+            ],
+            "defaultValue": "Deny",
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            }
+          }
+        },
+        "policyRule": {
+          "if": {
+            "field": "type",
+            "equals": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+          },
+          "then": {
+            "effect": "[[parameters('effect')]"
+          }
+        }
+      }
+    }
+  ]
+}

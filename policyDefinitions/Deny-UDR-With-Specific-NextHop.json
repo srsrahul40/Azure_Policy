@@ -1,0 +1,100 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Deny-UDR-With-Specific-NextHop",
+    "policyDisplayName": "User Defined Routes with 'Next Hop Type' set to 'Internet' or 'VirtualNetworkGateway' should be denied",
+    "policyDescription": "This policy denies the creation of a User Defined Route with 'Next Hop Type' set to 'Internet' or 'VirtualNetworkGateway'.",
+    "policyVersion": "1.0.0",
+    "policyCategory": "Network",
+    "defaultExcludedDestinations": [
+      "Internet",
+      "VirtualNetworkGateway"
+    ]
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('policyName')]",
+      "properties": {
+        "policyType": "Custom",
+        "mode": "All",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "[variables('policyVersion')]",
+          "category": "[variables('policyCategory')]",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "alzCloudEnvironments": [
+            "AzureCloud",
+            "AzureChinaCloud",
+            "AzureUSGovernment"
+          ]
+        },
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "metadata": {
+              "displayName": "Effect",
+              "description": "The effect determines what happens when the policy rule is evaluated to match"
+            },
+            "allowedValues": [
+              "Audit",
+              "Deny",
+              "Disabled"
+            ],
+            "defaultValue": "Deny"
+          },
+          "excludedDestinations": {
+            "type": "Array",
+            "metadata": {
+              "displayName": "Excluded Destinations",
+              "description": "Array of route destinations that are to be denied"
+            },
+            "defaultValue": "[variables('defaultExcludedDestinations')]"
+          }
+        },
+        "policyRule": {
+          "if": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "field": "type",
+                    "equals": "Microsoft.Network/routeTables"
+                  },
+                  {
+                    "count": {
+                      "field": "Microsoft.Network/routeTables/routes[*]",
+                      "where": {
+                        "field": "Microsoft.Network/routeTables/routes[*].nextHopType",
+                        "in": "[[parameters('excludedDestinations')]"
+                      }
+                    },
+                    "notEquals": 0
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "type",
+                    "equals": "Microsoft.Network/routeTables/routes"
+                  },
+                  {
+                    "field": "Microsoft.Network/routeTables/routes/nextHopType",
+                    "in": "[[parameters('excludedDestinations')]"
+                  }
+                ]
+              }
+            ]
+          },
+          "then": {
+            "effect": "[[parameters('effect')]"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Deny-MachineLearning-PublicNetworkAccess",
+    "policyDisplayName": "[Deprecated] Azure Machine Learning should have disabled public network access",
+    "policyDescription": "Denies public network access for Azure Machine Learning workspaces. Superseded by https://www.azadvertizer.net/azpolicyadvertizer/438c38d2-3772-465a-a9cc-7a6666a275ce.html"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('policyName')]",
+      "properties": {
+        "policyType": "Custom",
+        "mode": "Indexed",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "1.0.0-deprecated",
+          "category": "Machine Learning",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "deprecated": true,
+          "supersededBy": "438c38d2-3772-465a-a9cc-7a6666a275ce",
+          "alzCloudEnvironments": [
+            "AzureCloud"
+          ]
+        },
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            },
+            "allowedValues": [
+              "Audit",
+              "Disabled",
+              "Deny"
+            ],
+            "defaultValue": "Deny"
+          }
+        },
+        "policyRule": {
+          "if": {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.MachineLearningServices/workspaces"
+              },
+              {
+                "field": "Microsoft.MachineLearningServices/workspaces/publicNetworkAccess",
+                "notEquals": "Disabled"
+              }
+            ]
+          },
+          "then": {
+            "effect": "[[parameters('effect')]"
+          }
+        }
+      }
+    }
+  ]
+}

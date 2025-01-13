@@ -1,0 +1,65 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Deny-VNET-Peer-Cross-Sub",
+    "policyDisplayName": "Deny vNet peering cross subscription.",
+    "policyDescription": "This policy denies the creation of vNet Peerings outside of the same subscriptions under the assigned scope."
+  },
+  "resources": [
+    {
+      "name": "[variables('policyName')]",
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "scope": null,
+      "properties": {
+        "policyType": "Custom",
+        "mode": "All",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "1.0.1",
+          "category": "Network",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "alzCloudEnvironments": [
+            "AzureCloud",
+            "AzureChinaCloud",
+            "AzureUSGovernment"
+          ]
+        },
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            },
+            "allowedValues": [
+              "Audit",
+              "Deny",
+              "Disabled"
+            ],
+            "defaultValue": "Deny"
+          }
+        },
+        "policyRule": {
+          "if": {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+              },
+              {
+                "field": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings/remoteVirtualNetwork.id",
+                "notcontains": "[[subscription().id]"
+              }
+            ]
+          },
+          "then": {
+            "effect": "[[parameters('effect')]"
+          }
+        }
+      }
+    }
+  ]
+}

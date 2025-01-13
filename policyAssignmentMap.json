@@ -1,0 +1,146 @@
+{
+    "archeTypeMGMap": [
+        {
+            "archetypes": [
+                "root"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3"
+        },
+        {
+            "archetypes": [
+                "platform"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3Platform"
+        },
+        {
+            "archetypes": [
+                "landing_zones"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3LandingZone"
+        },
+        {
+            "archetypes": [
+                "corp"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3Corp"
+        },
+        {
+            "archetypes": [
+                "online"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3ConfidentialOnline"
+        },
+        {
+            "archetypes": [
+                "sandboxes"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3Sandbox"
+        },
+        {
+            "archetypes": [
+                "management"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3Management"
+        },
+        {
+            "archetypes": [
+                "connectivity"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3Connectivity"
+        },
+        {
+            "archetypes": [
+                "identity"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3Identity"
+        },
+        {
+            "archetypes": [
+                "decommissioned"
+            ],
+            "managementGroupId": "/providers/Microsoft.Management/managementGroups/pTest3Decommisioned"
+        }
+    ],
+    "archeTypePolicyAssignmentMap": {
+        "root": [
+            "Audit-ResourceRGLocation",
+            "Audit-TrustedLaunch",
+            "Audit-UnusedResources",
+            "Audit-ZoneResiliency",
+            "Deny-Classic-Resources",
+            "Deny-UnmanagedDisk",
+            "Deploy-ASC-Monitoring",
+            "Deploy-AzActivity-Log",
+            "Deploy-Diag-LogsCat",
+            "Deploy-MDFC-Config-H224",
+            "Deploy-MDFC-OssDb",
+            "Deploy-MDFC-SqlAtp",
+            "Enforce-ACSB"
+        ],
+        "platform": [
+            "DenyAction-DeleteUAMIAMA",
+            "Deploy-MDFC-DefSQL-AMA",
+            "Deploy-VM-ChangeTrack",
+            "Deploy-VM-Monitoring",
+            "Deploy-vmArc-ChangeTrack",
+            "Deploy-vmHybr-Monitoring",
+            "Deploy-VMSS-ChangeTrack",
+            "Deploy-VMSS-Monitoring",
+            "Enable-AUM-CheckUpdates",
+            "Enforce-ASR",
+            "Enforce-GR-KeyVault",
+            "Enforce-Subnet-Private"
+        ],
+        "landing_zones": [
+            "Audit-AppGW-WAF",
+            "Deny-IP-forwarding",
+            "Deny-MgmtPorts-Internet",
+            "Deny-Priv-Esc-AKS",
+            "Deny-Privileged-AKS",
+            "Deny-Storage-http",
+            "Deny-Subnet-Without-Nsg",
+            "Deploy-AzSqlDb-Auditing",
+            "Deploy-MDFC-DefSQL-AMA",
+            "Deploy-SQL-TDE",
+            "Deploy-SQL-Threat",
+            "Deploy-VM-Backup",
+            "Deploy-VM-ChangeTrack",
+            "Deploy-VM-Monitoring",
+            "Deploy-vmArc-ChangeTrack",
+            "Deploy-vmHybr-Monitoring",
+            "Deploy-VMSS-ChangeTrack",
+            "Deploy-VMSS-Monitoring",
+            "Enable-AUM-CheckUpdates",
+            "Enable-DDoS-VNET",
+            "Enforce-AKS-HTTPS",
+            "Enforce-ASR",
+            "Enforce-GR-KeyVault",
+            "Enforce-Subnet-Private",
+            "Enforce-TLS-SSL-H224"
+        ],
+        "corp": [
+            "Audit-PeDnsZones",
+            "Deny-HybridNetworking",
+            "Deny-Public-Endpoints",
+            "Deny-Public-IP-On-NIC",
+            "Deploy-Private-DNS-Zones"
+        ],
+        "online": [],
+        "sandboxes": [
+            "Enforce-ALZ-Sandbox"
+        ],
+        "management": [],
+        "connectivity": [
+            "Enable-DDoS-VNET"
+        ],
+        "identity": [
+            "Deny-MgmtPorts-Internet",
+            "Deny-Public-IP",
+            "Deny-Subnet-Without-Nsg",
+            "Deploy-VM-Backup"
+        ],
+        "decommissioned": [
+            "Enforce-ALZ-Decomm"
+        ]
+    }
+}

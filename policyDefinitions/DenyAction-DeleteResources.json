@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "DenyAction-DeleteResources",
+    "policyDisplayName": "Do not allow deletion of specified resource and resource type",
+    "policyDescription": "This policy enables you to specify the resource and resource type that your organization can protect from accidental deletion by blocking delete calls using the deny action effect."
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('policyName')]",
+      "properties": {
+        "policyType": "Custom",
+        "mode": "All",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "1.0.0",
+          "category": "General",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "alzCloudEnvironments": [
+            "AzureCloud",
+            "AzureChinaCloud",
+            "AzureUSGovernment"
+          ]
+        },
+        "parameters": {
+          "resourceName": {
+            "type": "String",
+            "metadata": {
+              "displayName": "Resource Name",
+              "description": "Provide the name of the resource that you want to protect from accidental deletion."
+            }
+          },
+          "resourceType": {
+            "type": "String",
+            "metadata": {
+              "displayName": "Resource Type",
+              "description": "Provide the resource type that you want to protect from accidental deletion."
+            }
+          },
+          "effect": {
+            "type": "String",
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            },
+            "allowedValues": [
+              "DenyAction",
+              "Disabled"
+            ],
+            "defaultValue": "DenyAction"
+          }
+        },
+        "policyRule": {
+          "if": {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "[[parameters('resourceType')]"
+              },
+              {
+                "field": "name",
+                "like": "[[parameters('resourceName')]"
+              }
+            ]
+          },
+          "then": {
+            "effect": "[[parameters('effect')]",
+            "details": {
+              "actionNames": [
+                "delete"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

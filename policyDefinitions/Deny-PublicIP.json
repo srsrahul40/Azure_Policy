@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Deny-PublicIP",
+    "policyDisplayName": "[Deprecated] Deny the creation of public IP",
+    "policyDescription": "[Deprecated] This policy denies creation of Public IPs under the assigned scope. Superseded by https://www.azadvertizer.net/azpolicyadvertizer/6c112d4e-5bc7-47ae-a041-ea2d9dccd749.html using appropriate assignment parameters.",
+    "policyVersion": "1.0.0-deprecated",
+    "policyCategory": "Network"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('policyName')]",
+      "properties": {
+        "policyType": "Custom",
+        "mode": "Indexed",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "[variables('policyVersion')]",
+          "category": "[variables('policyCategory')]",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "deprecated": true,
+          "supersededBy": "6c112d4e-5bc7-47ae-a041-ea2d9dccd749",
+          "alzCloudEnvironments": [
+            "AzureCloud",
+            "AzureChinaCloud",
+            "AzureUSGovernment"
+          ]
+        },
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "allowedValues": [
+              "Audit",
+              "Deny",
+              "Disabled"
+            ],
+            "defaultValue": "Deny",
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            }
+          }
+        },
+        "policyRule": {
+          "if": {
+            "field": "type",
+            "equals": "Microsoft.Network/publicIPAddresses"
+          },
+          "then": {
+            "effect": "[[parameters('effect')]"
+          }
+        }
+      }
+    }
+  ]
+}

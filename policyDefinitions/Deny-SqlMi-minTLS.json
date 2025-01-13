@@ -1,0 +1,87 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Deny-SqlMi-minTLS",
+    "policyDisplayName": "SQL Managed Instance should have the minimal TLS version set to the highest version",
+    "policyDescription": "Setting minimal TLS version to 1.2 improves security by ensuring your SQL Managed Instance can only be accessed from clients using TLS 1.2. Using versions of TLS less than 1.2 is not recommended since they have well-documented security vulnerabilities.",
+    "policyVersion": "1.0.0",
+    "policyCategory": "SQL"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('policyName')]",
+      "properties": {
+        "policyType": "Custom",
+        "mode": "Indexed",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "[variables('policyVersion')]",
+          "category": "[variables('policyCategory')]",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "alzCloudEnvironments": [
+            "AzureCloud",
+            "AzureChinaCloud",
+            "AzureUSGovernment"
+          ]
+        },
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "allowedValues": [
+              "Audit",
+              "Disabled",
+              "Deny"
+            ],
+            "defaultValue": "Audit",
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            }
+          },
+          "minimalTlsVersion": {
+            "type": "String",
+            "defaultValue": "1.2",
+            "allowedValues": [
+              "1.2",
+              "1.1",
+              "1.0"
+            ],
+            "metadata": {
+              "displayName": "Select version for SQL server",
+              "description": "Select minimum TLS version SQL servers to enforce"
+            }
+          }
+        },
+        "policyRule": {
+          "if": {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.Sql/managedInstances"
+              },
+              {
+                "anyOf": [
+                  {
+                    "field": "Microsoft.Sql/managedInstances/minimalTlsVersion",
+                    "exists": "false"
+                  },
+                  {
+                    "field": "Microsoft.Sql/managedInstances/minimalTlsVersion",
+                    "notequals": "[[parameters('minimalTlsVersion')]"
+                  }
+                ]
+              }
+            ]
+          },
+          "then": {
+            "effect": "[[parameters('effect')]"
+          }
+        }
+      }
+    }
+  ]
+}

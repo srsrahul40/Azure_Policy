@@ -1,0 +1,64 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "variables": {
+        "policyName": "Deny-AzFw-Without-Policy",
+        "policyDisplayName": "Azure Firewall should have a default Firewall Policy",
+        "policyDescription": "This policy denies the creation of Azure Firewall without a default Firewall Policy."
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policyDefinitions",
+            "apiVersion": "2021-06-01",
+            "name": "[variables('policyName')]",
+            "properties": {
+                "policyType": "Custom",
+                "mode": "All",
+                "displayName": "[variables('policyDisplayName')]",
+                "description": "[variables('policyDescription')]",
+                "metadata": {
+                    "version": "1.0.0",
+                    "category": "Network",
+                    "source": "https://github.com/Azure/Enterprise-Scale/",
+                    "alzCloudEnvironments": [
+                        "AzureCloud",
+                        "AzureChinaCloud",
+                        "AzureUSGovernment"
+                    ]
+                },
+                "parameters": {
+                    "effect": {
+                        "type": "String",
+                        "defaultValue": "Deny",
+                        "allowedValues": [
+                            "Audit",
+                            "Deny",
+                            "Disabled"
+                        ],
+                        "metadata": {
+                            "displayName": "Effect",
+                            "description": "Enable or disable the execution of the policy"
+                        }
+                    }
+                },
+                "policyRule": {
+                    "if": {
+                        "allOf": [
+                            {
+                                "field": "type",
+                                "equals": "Microsoft.Network/azureFirewalls"
+                            },
+                            {
+                                "field": "Microsoft.Network/azureFirewalls/firewallPolicy.id",
+                                "exists": "false"
+                            }
+                        ]
+                    },
+                    "then": {
+                        "effect": "[[parameters('effect')]"
+                    }
+                }
+            }
+        }
+    ]
+}

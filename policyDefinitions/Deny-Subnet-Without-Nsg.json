@@ -1,0 +1,113 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Deny-Subnet-Without-Nsg",
+    "policyDisplayName": "Subnets should have a Network Security Group",
+    "policyDescription": "This policy denies the creation of a subnet without a Network Security Group. NSG helps to protect traffic across subnet-level.",
+    "policyVersion": "2.0.0",
+    "policyCategory": "Network",
+    "defaultExcludedSubnets": [
+      "GatewaySubnet",
+      "AzureFirewallSubnet",
+      "AzureFirewallManagementSubnet"
+    ]
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('policyName')]",
+      "properties": {
+        "policyType": "Custom",
+        "mode": "All",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "[variables('policyVersion')]",
+          "category": "[variables('policyCategory')]",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "alzCloudEnvironments": [
+            "AzureCloud",
+            "AzureChinaCloud",
+            "AzureUSGovernment"
+          ]
+        },
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "allowedValues": [
+              "Audit",
+              "Deny",
+              "Disabled"
+            ],
+            "defaultValue": "Deny",
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            }
+          },
+          "excludedSubnets": {
+            "type": "Array",
+            "metadata": {
+              "displayName": "Excluded Subnets",
+              "description": "Array of subnet names that are excluded from this policy"
+            },
+            "defaultValue": "[variables('defaultExcludedSubnets')]"
+          }
+        },
+        "policyRule": {
+          "if": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "field": "type",
+                    "equals": "Microsoft.Network/virtualNetworks"
+                  },
+                  {
+                    "count": {
+                      "field": "Microsoft.Network/virtualNetworks/subnets[*]",
+                      "where": {
+                        "allOf": [
+                          {
+                            "field": "Microsoft.Network/virtualNetworks/subnets[*].networkSecurityGroup.id",
+                            "exists": "false"
+                          },
+                          {
+                            "field": "Microsoft.Network/virtualNetworks/subnets[*].name",
+                            "notIn": "[[parameters('excludedSubnets')]"
+                          }
+                        ]
+                      }
+                    },
+                    "notEquals": 0
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "type",
+                    "equals": "Microsoft.Network/virtualNetworks/subnets"
+                  },
+                  {
+                    "field": "name",
+                    "notIn": "[[parameters('excludedSubnets')]"
+                  },
+                  {
+                    "field": "Microsoft.Network/virtualNetworks/subnets/networkSecurityGroup.id",
+                    "exists": "false"
+                  }
+                ]
+              }
+            ]
+          },
+          "then": {
+            "effect": "[[parameters('effect')]"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "variables": {
+        "policyName": "Deny-EH-Premium-CMK",
+        "policyDisplayName": "Event Hub namespaces (Premium) should use a customer-managed key for encryption",
+        "policyDescription": "Event Hub namespaces (Premium) should use a customer-managed key for encryption."
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policyDefinitions",
+            "apiVersion": "2021-06-01",
+            "name": "[variables('policyName')]",
+            "properties": {
+                "policyType": "Custom",
+                "mode": "All",
+                "displayName": "[variables('policyDisplayName')]",
+                "description": "[variables('policyDescription')]",
+                "metadata": {
+                    "version": "1.0.0",
+                    "category": "Event Hub",
+                    "source": "https://github.com/Azure/Enterprise-Scale/",
+                    "alzCloudEnvironments": [
+                        "AzureCloud",
+                        "AzureChinaCloud",
+                        "AzureUSGovernment"
+                    ]
+                },
+                "parameters": {
+                    "effect": {
+                        "type": "String",
+                        "allowedValues": [
+                            "Audit",
+                            "Deny",
+                            "Disabled"
+                        ],
+                        "defaultValue": "Deny",
+                        "metadata": {
+                            "displayName": "Effect",
+                            "description": "Enable or disable the execution of the policy"
+                        }
+                    }
+                },
+                "policyRule": {
+                    "if": {
+                        "allOf": [
+                            {
+                                "field": "type",
+                                "equals": "Microsoft.EventHub/namespaces"
+                            },
+                            {
+                                "field": "Microsoft.EventHub/namespaces/sku.name",
+                                "equals": "Premium"
+                            },
+                            {
+                                "not": {
+                                    "field": "Microsoft.EventHub/namespaces/encryption.keySource",
+                                    "equals": "Microsoft.Keyvault"
+                                }
+                            }
+                        ]
+                    },
+                    "then": {
+                        "effect": "[[parameters('effect')]"
+                    }
+                }
+            }
+        }
+    ]
+}

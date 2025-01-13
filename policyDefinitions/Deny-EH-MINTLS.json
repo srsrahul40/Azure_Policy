@@ -1,0 +1,81 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "variables": {
+      "policyName": "Deny-EH-minTLS",
+      "policyDisplayName": "Event Hub namespaces should use a valid TLS version",
+      "policyDescription": "Event Hub namespaces should use a valid TLS version."
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Authorization/policyDefinitions",
+        "apiVersion": "2021-06-01",
+        "name": "[variables('policyName')]",
+        "properties": {
+          "policyType": "Custom",
+          "mode": "All",
+          "displayName": "[variables('policyDisplayName')]",
+          "description": "[variables('policyDescription')]",
+          "metadata": {
+            "version": "1.0.0",
+            "category": "Event Hub",
+            "source": "https://github.com/Azure/Enterprise-Scale/",
+            "alzCloudEnvironments": [
+              "AzureCloud",
+              "AzureChinaCloud",
+              "AzureUSGovernment"
+            ]
+          },
+          "parameters": {
+            "effect": {
+              "type": "String",
+              "allowedValues": [
+                "Audit",
+                "Deny",
+                "Disabled"
+              ],
+              "defaultValue": "Deny",
+              "metadata": {
+                "displayName": "Effect",
+                "description": "Enable or disable the execution of the policy"
+              }
+            },
+            "minTlsVersion": {
+              "type": "String",
+              "metadata": {
+                "displayName": "Minimum TLS Version",
+                "description": "Minimum TLS version to be used by Event Hub"
+              },
+              "defaultValue": "1.2"
+            }
+          },
+          "policyRule": {
+            "if": {
+              "allOf": [
+                {
+                  "field": "type",
+                  "equals": "Microsoft.EventHub/namespaces"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "field": "Microsoft.EventHub/namespaces/minimumTlsVersion",
+                      "notEquals": "[[parameters('minTlsVersion')]"
+                    },
+                    {
+                      "field": "Microsoft.EventHub/namespaces/minimumTlsVersion",
+                      "exists": "false"
+                    }
+                  ]
+                }
+              ]
+            },
+            "then": {
+              "effect": "[[parameters('effect')]"
+            }
+          }
+        }
+      }
+    ]
+  }
+  

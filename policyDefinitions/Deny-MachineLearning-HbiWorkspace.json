@@ -1,0 +1,70 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Deny-MachineLearning-HbiWorkspace",
+    "policyDisplayName": "Enforces high business impact Azure Machine Learning Workspaces",
+    "policyDescription": "Enforces high business impact Azure Machine Learning workspaces."
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('policyName')]",
+      "properties": {
+        "policyType": "Custom",
+        "mode": "Indexed",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "1.0.0",
+          "category": "Machine Learning",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "alzCloudEnvironments": [
+            "AzureCloud"
+          ]
+        },
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            },
+            "allowedValues": [
+              "Audit",
+              "Disabled",
+              "Deny"
+            ],
+            "defaultValue": "Deny"
+          }
+        },
+        "policyRule": {
+          "if": {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.MachineLearningServices/workspaces"
+              },
+              {
+                "anyOf": [
+                  {
+                    "field": "Microsoft.MachineLearningServices/workspaces/hbiWorkspace",
+                    "exists": false
+                  },
+                  {
+                    "field": "Microsoft.MachineLearningServices/workspaces/hbiWorkspace",
+                    "equals": "false"
+                  }
+                ]
+              }
+            ]
+          },
+          "then": {
+            "effect": "[[parameters('effect')]"
+          }
+        }
+      }
+    }
+  ]
+}

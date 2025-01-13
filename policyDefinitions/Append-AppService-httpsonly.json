@@ -1,0 +1,69 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Append-AppService-httpsonly",
+    "policyDisplayName": "AppService append enable https only setting to enforce https setting.",
+    "policyDescription": "Appends the AppService sites object to ensure that HTTPS only is enabled for server/service authentication and protects data in transit from network layer eavesdropping attacks. Please note Append does not enforce compliance use then deny."
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "name": "[variables('policyName')]",
+      "apiVersion": "2019-09-01",
+      "properties": {
+        "displayName": "[variables('policyDisplayName')]",
+        "policyType": "Custom",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "1.0.0",
+          "category": "App Service",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "alzCloudEnvironments": [
+            "AzureCloud",
+            "AzureChinaCloud",
+            "AzureUSGovernment"
+          ]
+        },
+        "mode": "All",
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "defaultValue": "Append",
+            "allowedValues": [
+              "Append",
+              "Disabled"
+            ],
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            }
+          }
+        },
+        "policyRule": {
+          "if": {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.Web/sites"
+              },
+              {
+                "field": "Microsoft.Web/sites/httpsOnly",
+                "notEquals": true
+              }
+            ]
+          },
+          "then": {
+            "effect": "[[parameters('effect')]",
+            "details": [
+              {
+                "field": "Microsoft.Web/sites/httpsOnly",
+                "value": true
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

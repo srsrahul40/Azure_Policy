@@ -1,0 +1,73 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "variables": {
+      "policyName": "Deny-AppService-without-BYOC",
+      "policyDisplayName": "App Service certificates must be stored in Key Vault",
+      "policyDescription": "App Service (including Logic apps and Function apps) must use certificates stored in Key Vault."
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Authorization/policyDefinitions",
+        "apiVersion": "2021-06-01",
+        "name": "[variables('policyName')]",
+        "properties": {
+          "policyType": "Custom",
+          "mode": "All",
+          "displayName": "[variables('policyDisplayName')]",
+          "description": "[variables('policyDescription')]",
+          "metadata": {
+            "version": "1.0.0",
+            "category": "App Service",
+            "source": "https://github.com/Azure/Enterprise-Scale/",
+            "alzCloudEnvironments": [
+              "AzureCloud",
+              "AzureChinaCloud",
+              "AzureUSGovernment"
+            ]
+          },
+          "parameters": {
+            "effect": {
+              "type": "String",
+              "metadata": {
+                "displayName": "Effect",
+                "description": "Enable or disable the execution of the policy"
+              },
+              "allowedValues": [
+                "Audit",
+                "Deny",
+                "Disabled"
+              ],
+              "defaultValue": "Audit"
+            }
+          },
+          "policyRule": {
+            "if": {
+              "allOf": [
+                {
+                  "field": "type",
+                  "equals": "Microsoft.Web/certificates"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "field": "Microsoft.Web/certificates/keyVaultId",
+                      "exists": "false"
+                    },
+                    {
+                      "field": "Microsoft.Web/certificates/keyVaultSecretName",
+                      "exists": "false"
+                    }
+                  ]
+                }
+              ]
+            },
+            "then": {
+              "effect": "[[parameters('effect')]"
+            }
+          }
+        }
+      }
+    ]
+  }
+  

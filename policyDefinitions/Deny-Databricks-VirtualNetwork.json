@@ -1,0 +1,74 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "variables": {
+    "policyName": "Deny-Databricks-VirtualNetwork",
+    "policyDisplayName": "Deny Databricks workspaces without Vnet injection",
+    "policyDescription": "Enforces the use of vnet injection for Databricks workspaces."
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/policyDefinitions",
+      "apiVersion": "2021-06-01",
+      "name": "[variables('policyName')]",
+      "properties": {
+        "policyType": "Custom",
+        "mode": "Indexed",
+        "displayName": "[variables('policyDisplayName')]",
+        "description": "[variables('policyDescription')]",
+        "metadata": {
+          "version": "1.0.0",
+          "category": "Databricks",
+          "source": "https://github.com/Azure/Enterprise-Scale/",
+          "alzCloudEnvironments": [
+            "AzureCloud"
+          ]
+        },
+        "parameters": {
+          "effect": {
+            "type": "String",
+            "defaultValue": "Deny",
+            "allowedValues": [
+              "Audit",
+              "Disabled",
+              "Deny"
+            ],
+            "metadata": {
+              "displayName": "Effect",
+              "description": "Enable or disable the execution of the policy"
+            }
+          }
+        },
+        "policyRule": {
+          "if": {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.Databricks/workspaces"
+              },
+              {
+                "anyOf": [
+                  {
+                    "field": "Microsoft.Databricks/workspaces/parameters.customVirtualNetworkId.value",
+                    "exists": false
+                  },
+                  {
+                    "field": "Microsoft.Databricks/workspaces/parameters.customPublicSubnetName.value",
+                    "exists": false
+                  },
+                  {
+                    "field": "Microsoft.Databricks/workspaces/parameters.customPrivateSubnetName.value",
+                    "exists": false
+                  }
+                ]
+              }
+            ]
+          },
+          "then": {
+            "effect": "[[parameters('effect')]"
+          }
+        }
+      }
+    }
+  ]
+}

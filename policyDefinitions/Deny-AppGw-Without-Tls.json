@@ -1,0 +1,88 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "variables": {
+        "policyName": "Deny-AppGw-Without-Tls",
+        "policyDisplayName": "Application Gateway should be deployed with predefined Microsoft policy that is using TLS version 1.2",
+        "policyDescription": "This policy ensures that Application Gateways are deployed with a predefined Microsoft SSL policy using TLS version 1.2."
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policyDefinitions",
+            "apiVersion": "2021-06-01",
+            "name": "[variables('policyName')]",
+            "properties": {
+                "policyType": "Custom",
+                "mode": "All",
+                "displayName": "[variables('policyDisplayName')]",
+                "description": "[variables('policyDescription')]",
+                "metadata": {
+                    "version": "1.0.0",
+                    "category": "Network",
+                    "source": "https://github.com/Azure/Enterprise-Scale/",
+                    "alzCloudEnvironments": [
+                        "AzureCloud",
+                        "AzureChinaCloud",
+                        "AzureUSGovernment"
+                    ]
+                },
+                "parameters": {
+                    "effect": {
+                        "type": "String",
+                        "metadata": {
+                            "displayName": "Effect",
+                            "description": "Enable or disable the execution of the policy"
+                        },
+                        "allowedValues": [
+                            "Audit",
+                            "Deny",
+                            "Disabled"
+                        ],
+                        "defaultValue": "Deny"
+                    },
+                    "predefinedPolicyName": {
+                        "type": "array",
+                        "metadata": {
+                            "displayName": "Predefined policy names",
+                            "description": "List of predefined SSL policy names that use TLS version 1.2."
+                        },
+                        "defaultValue": [
+                            "AppGwSslPolicy20220101",
+                            "AppGwSslPolicy20170401S",
+                            "AppGwSslPolicy20220101S"
+                        ]
+                    }
+                },
+                "policyRule": {
+                    "if": {
+                        "allOf": [
+                            {
+                                "field": "type",
+                                "equals": "Microsoft.Network/applicationGateways"
+                            },
+                            {
+                                "anyOf": [
+                                    {
+                                        "field": "Microsoft.Network/applicationGateways/sslPolicy.policyType",
+                                        "notEquals": "Predefined"
+                                    },
+                                    {
+                                        "field": "Microsoft.Network/applicationGateways/sslPolicy.policyType",
+                                        "exists": "false"
+                                    },
+                                    {
+                                        "field": "Microsoft.Network/applicationGateways/sslPolicy.policyName",
+                                        "notIn": "[[parameters('predefinedPolicyName')]"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "then": {
+                        "effect": "[[parameters('effect')]"
+                    }
+                }
+            }
+        }
+    ]
+}
